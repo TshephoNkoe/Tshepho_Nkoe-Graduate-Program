@@ -1,16 +1,16 @@
 Extensible Web-Based Workflow Management System
 Table of Contents
-Extensible Web-Based Workflow Management System	1
-1.	Description	1
-2.	PURPOSE	1
-3.	FEATURES	1
-4.	TECHNOLOGIES USED	2
-5. INSTALLATION PROCESS	2
+Extensible Web-Based Workflow Management System	
+1.	Description	
+2.	PURPOSE	
+3.	FEATURES	
+4.	TECHNOLOGIES USED	
+5. INSTALLATION PROCESS	
 5.1 INSTRUCTIONS ON HOW TO ACCESS AND STORE THE FOLDER PROVIDED ON GITHUB TO THE CORRECT DIRECTORY ON YOUR LOCAL COMPUTER.	2
-6.	Dependencies and extensions	3
-7.	IMAGES OF THE SOFTWARE	4
-7.1 Image of the Database	4
-7.2 XAMP Images	6
+6.	Dependencies and extensions	
+7.	IMAGES OF THE SOFTWARE	
+7.1 Image of the Database	
+7.2 XAMP Images	
 
 
 
