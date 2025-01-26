@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Temporal Graph</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #f2f2f2;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #262626;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 20px;
+            color: #f2f2f2;
+        }
+
+        img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+        }
+
+        .summary-container {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .summary-container h2 {
+            margin-bottom: 20px;
+            color: #f2f2f2;
+        }
+
+        .summary-container p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+
+        form {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            color: #f2f2f2;
+        }
+
+        select {
+            margin-right: 10px;
+            background-color: #333;
+            color: #f2f2f2;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            border: none;
+            color: #f2f2f2;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #selectedMonthData {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        #selectedMonthData h3 {
+            margin-bottom: 10px;
+            color: #f2f2f2;
+        }
+
+        #selectedMonthData p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container graph-container">
+    <h1>Your Income and Expenses Graph</h1>
+    {% if graph_data %}
+        <img src="data:image/png;base64,{{ graph_data }}" alt="Temporal Graph">
+    {% else %}
+        <p>No graph data available.</p>
+    {% endif %}
+</div>
+
+<div class="container summary-container">
+    <h2>Reports and Summaries</h2>
+    {% if graph_data %}
+        <p>Highest Income Month: {{ highest_income_month }}</p>
+        <p>Highest Expense Month: {{ highest_expense_month }}</p>
+        <p>Lowest Income Month: {{ lowest_income_month }}</p>
+        <p>Lowest Expense Month: {{ lowest_expense_month }}</p>
+        <p>Average Income: {{ average_income|default('Data not available')|round(2) }}</p>
+        <p>Average Expense: {{ average_expense|default('Data not available')|round(2) }}</p>
+    {% endif %}
+</div>
+
+<form class="container summary-container">
+    <h2>Get Data for a Chosen Month</h2>
+    <label for="monthSelect">Select a Month:</label>
+    <select id="monthSelect">
+        {% for month in months_data['Month'] %}
+            <option value="{{ month }}">{{ month }}</option>
+        {% endfor %}
+    </select>
+    <button type="button" onclick="getMonthData()">Get Data</button>
+</form>
+
+<div class="container summary-container" id="selectedMonthData"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const graphData = JSON.parse("{{ graph_data|safe }}");
+
+        const ctx = document.createElement('canvas');
+        ctx.setAttribute('id', 'temporalGraph');
+        document.querySelector('.graph-container').appendChild(ctx);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: graphData.labels,
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: graphData.income,
+                        backgroundColor: 'green',
+                        borderColor: 'green',
+                        borderWidth: 1,
+                    },
+                    {
+                        label: 'Expense',
+                        data: graphData.expense,
+                        backgroundColor: 'red',
+                        borderColor: 'red',
+                        borderWidth: 1,
+                    }
+                ],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 45,
+                        }
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+
+    function getMonthData() {
+        const selectedMonth = document.getElementById('monthSelect').value;
+
+        fetch('/get_data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({month: selectedMonth}),
+        })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.income !== null && data.expense !== null) {
+                        document.getElementById('selectedMonthData').innerHTML = `
+                    <h3>Selected Month: ${selectedMonth}</h3>
+                    <p>Income: ${data.income}</p>
+                    <p>Expense: ${data.expense}</p>
+                `;
+                    } else {
+                        document.getElementById('selectedMonthData').innerHTML = '<p>Data not available for the selected month.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('selectedMonthData').innerHTML = '<p>Error fetching data.</p>';
+                });
+    }
+</script>
+</body>
+</html>
